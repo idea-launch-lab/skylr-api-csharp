@@ -1,0 +1,333 @@
+﻿using UnityEngine;
+using System.Collections;
+using System.Collections.Specialized;
+using System.Collections.Generic;
+using InstrumentationLib;
+
+using System;
+using System.IO;
+using System.Text;
+using System.Runtime.Serialization.Formatters.Binary;
+
+public class NewBehaviourScript : MonoBehaviour {
+
+	static string uri = "http://skylr.renci.org";
+	static string mode = "DOCUMENT";
+	static int LoggingDensity = 5;
+	string myDocPath = "";
+	System.Random randGenerator = new System.Random();
+	int prevRandSleep = -1;
+	string randMouseButton = "left_button";
+	string randKey = "D";
+
+	// Use this for initialization
+	void Start () {
+		Debug.LogError ("Ready");
+
+		myDocPath = "C:\\Users\\sthakur\\Documents\\00_Projects\\1_LAS\\code\\LasIL\\data";
+		Debug.LogError("my doc path: " + myDocPath);
+
+		Application.runInBackground = true;
+	}
+
+	public static long ConvertToUnixTimestamp(DateTime date)
+	{
+		DateTime origin = new DateTime(1970, 1, 1, 0, 0, 0, 0);
+		TimeSpan diff = date.ToUniversalTime() - origin;
+		return (long)Math.Floor(diff.TotalSeconds);
+	}
+
+	// Update is called once per frame
+	void Update () {
+
+		//var random = new System.Random (System.DateTime.Now.Millisecond);
+		var datetime = "" + (Math.Floor(System.DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1, 0, 0, 0, System.DateTimeKind.Utc)).TotalMilliseconds)).ToString();
+		/*
+		// Randomly post stuff
+		int randSleep = 0;
+
+		// If previous sleep was over 15 sec, sleep for a short time this iteration
+		if(prevRandSleep > 15000 ) {
+			randSleep = randGenerator.Next (1000, 4000);
+		}
+		// If within 3 sec sleep, continue short sleep
+		else if(prevRandSleep >= 0 && prevRandSleep <= 3000) {
+			randSleep = prevRandSleep + 200;
+		}
+		// Generate a random sleep time betwee .5 and 20 sec
+		else {
+			randSleep = randGenerator.Next(500, 20000);
+		}
+
+		// First time
+		if(prevRandSleep < 0 ) {
+			prevRandSleep = 10;
+			randSleep = 100;
+		}
+		else
+			prevRandSleep = randSleep;
+
+
+		// Go idle for 15 sec
+		if ((randSleep>5500 && randSleep <6500) || (randSleep>11000 && randSleep <11500)) {
+			randSleep = 15000;
+			prevRandSleep = randSleep + 10;
+		}
+		// Go idle for a minute
+		else if ((randSleep>12000 && randSleep <12500)) {
+			randSleep = 60000;
+			prevRandSleep = randSleep;
+		}
+		// Go idle for a couple minutes
+		else if ((randSleep>13500 && randSleep <15000)) {
+			randSleep = 120000;
+			prevRandSleep = randSleep;
+		}
+
+		System.Threading.Thread.Sleep(randSleep);
+
+		int randX, randY, randZ;
+		randX = randGenerator.Next (-300,300);
+		randY = randGenerator.Next (-300,300);
+		randZ = randGenerator.Next (-300,300);
+
+		if(randGenerator.Next (0,10)%3==0)
+		{
+			if(randGenerator.Next (0,11)%3==0)
+				randMouseButton = "right_button";
+			else if(randGenerator.Next (0,11)%5==0)
+				randMouseButton = "middle_button";
+			else
+				randMouseButton = "left_button";
+		}
+
+		string postRandomData = "";
+		if(randSleep > 2500 && randGenerator.Next(0,100) > 66 ) {
+			if(randGenerator.Next (0,11)%2==0)
+			{
+				if(randGenerator.Next (0,11)%3==0)
+					randKey = "M";
+				else if(randGenerator.Next (0,11)%5==0)
+					randKey = "F";
+				else
+					randKey = "D";
+			}
+
+			postRandomData = "{" + 
+				"\"content\": " + 
+					"{  \"UserId\" : \"sthakur\", \"AppName\" : \"unity3D\", \"SysId\" : \"WIN64\", " + "\"ProjId\" : \"LAS/Instrumentation\", " + " \"EvtTime\" : " + datetime + " , \"NetAddr\" : \"152.14.3.32\" , \"GeoLoc\" : \"RALEIGH NC\" , " + " \"EvtType\" : \"key_press\" , \"EvtDesc\" : \"" + randKey  + "\" , \"EvtCoords\" : " + "{ \"x\" : " + randX + " , \"y\" : " + randY + " , \"z\" : " + randZ + " } " + ", \"evt_msg\" : \"hello world\"" + " }" + 
+				"}";
+		}
+		else
+			postRandomData = "{" + 
+				"\"content\": " + 
+					"{  \"UserId\" : \"sthakur\", \"AppName\" : \"unity3D\", \"SysId\" : \"WIN64\", " + "\"ProjId\" : \"LAS/Instrumentation\", " + " \"EvtTime\" : " + datetime + " , \"NetAddr\" : \"152.14.3.32\" , \"GeoLoc\" : \"RALEIGH NC\" , " + " \"EvtType\" : \"mouse_click\" , \"EvtDesc\" : \"" + randMouseButton  + "\" , \"EvtCoords\" : " + "{ \"x\" : " + randX + " , \"y\" : " + randY + " , \"z\" : " + randZ + " } " + ", \"evt_msg\" : \"hello world\"" + " }" + 
+					"}";
+
+		Debug.LogError("posting after " + (randSleep/1000) + " sec\n");// + " sec: " + System.DateTime.Now.ToString() + "\nData: " + postRandomData);
+
+		//LogData (postRandomData);
+		LasIL logger = new LasIL ();
+		
+		uri = "http://skylr.renci.org/api/data/document/add";
+		logger.SetResponseDensity(LoggingDensity);
+
+		Debug.LogError("Sending data: " + postRandomData);
+
+		ResponseObject R = logger.LogData (uri, (string)postRandomData);
+		Debug.LogError (R.Response);
+		*/
+
+		//-------------------------//
+
+
+		// Mouse presses
+		if (Input.GetMouseButtonUp (0) || Input.GetMouseButtonUp (1) || Input.GetMouseButtonUp (2) )
+		{
+			string mouseButton = "";
+			
+			if(Input.GetMouseButtonUp (0) )
+				mouseButton = "left_button";
+			else if(Input.GetMouseButtonUp (1) )
+				mouseButton = "right_button";
+			else if(Input.GetMouseButtonUp (2) )
+				mouseButton = "middle_button";
+
+			string postData = "{" + 
+				"\"content\": " + 
+					"{  \"UserId\" : \"sthakur\", \"AppName\" : \"unity3D\", \"SysId\" : \"WIN64\", " + "\"ProjId\" : \"LAS/Instrumentation\", " + " \"EvtTime\" : " + datetime + " , \"NetAddr\" : \"152.14.3.32\" , \"GeoLoc\" : \"RALEIGH NC\" , " + " \"EvtType\" : \"mouse_click\" , \"EvtDesc\" : \"" + mouseButton  + "\" , \"EvtCoords\" : " + "{ \"x\" : " + Input.mousePosition.x + " , \"y\" : " + Input.mousePosition.y + " , \"z\" : " + Input.mousePosition.z + " } " + ", \"evt_msg\" : \"hello world\"" + " }" + 
+					"}";
+
+			DumpString(postData);
+
+			LogData (postData);
+		}
+
+		// Key presses
+		
+		if( Input.GetKeyUp (KeyCode.Alpha1) ) {
+			LoggingDensity = 1;
+			Debug.LogError("response density: none");
+		}
+		else if( Input.GetKeyUp (KeyCode.Alpha2) ) {
+			LoggingDensity = 2;
+			Debug.LogError("response level: low");
+		}
+		else if( Input.GetKeyUp(KeyCode.Alpha3) ) {
+			LoggingDensity = 3;
+			Debug.LogError("response level: medium");
+		}
+		else if( Input.GetKeyUp(KeyCode.Alpha4) ) {
+			LoggingDensity = 4;
+			Debug.LogError("response level: high");
+		}
+		else if( Input.GetKeyUp(KeyCode.Alpha5) ) {
+			LoggingDensity = 5;
+			Debug.LogError("response level: all");
+		}
+
+		if( Input.GetKeyUp (KeyCode.B)) {
+			mode = "BINARY";
+			Debug.LogError("mode: " + mode);
+			string postData = "{" + 
+				"\"content\": [" + 
+					"{  \"UserId\" : \"sthakur\", \"AppName\" : \"unity3D\", \"SysId\" : \"WIN64\", " + "\"ProjId\" : \"LAS/Instrumentation\", " + " \"EvtTime\" : " + datetime + " , \"NetAddr\" : \"152.14.3.32\" , \"GeoLoc\" : \"RALEIGH NC\" , " + " \"EvtType\" : \"key_press\" , \"EvtDesc\" : \"" + KeyCode.B  + "\" , \"EvtCoords\" : " + "{ \"x\" : " + Input.mousePosition.x + " , \"y\" : " + Input.mousePosition.y + " , \"z\" : " + Input.mousePosition.z + " } "  + " }" + 
+					"]}";
+			DumpString (postData);
+			LogData (postData);
+		}
+		else if( Input.GetKeyUp (KeyCode.D)) {
+			mode = "DOCUMENT";
+			Debug.LogError("mode: " + mode);
+			string postData = "{" + 
+				"\"content\": [" + 
+					"{  \"UserId\" : \"sthakur\", \"AppName\" : \"unity3D\", \"SysId\" : \"WIN64\", " + "\"ProjId\" : \"LAS/Instrumentation\", " + " \"EvtTime\" : " + datetime + " , \"NetAddr\" : \"152.14.3.32\" , \"GeoLoc\" : \"RALEIGH NC\" , " + " \"EvtType\" : \"key_press\" , \"EvtDesc\" : \"" + KeyCode.D  + "\" , \"EvtCoords\" : " + "{ \"x\" : " + Input.mousePosition.x + " , \"y\" : " + Input.mousePosition.y + " , \"z\" : " + Input.mousePosition.z + " } "  + " }" + 
+					"]}";
+			DumpString (postData);
+			LogData (postData);
+		}
+		else if( Input.GetKeyUp (KeyCode.F)) {
+			mode = "FILE";
+			Debug.LogError("mode: " + mode);
+			string postData = "{" + 
+				"\"content\": [" + 
+					"{  \"UserId\" : \"sthakur\", \"AppName\" : \"unity3D\", \"SysId\" : \"WIN64\", " + "\"ProjId\" : \"LAS/Instrumentation\", " + " \"EvtTime\" : " + datetime + " , \"NetAddr\" : \"152.14.3.32\" , \"GeoLoc\" : \"RALEIGH NC\" , " + " \"EvtType\" : \"key_press\" , \"EvtDesc\" : \"" + KeyCode.F  + "\" , \"EvtCoords\" : " +  "{ \"x\" : " + Input.mousePosition.x + " , \"y\" : " + Input.mousePosition.y + " , \"z\" : " + Input.mousePosition.z + " } "  + " }" + 
+					"]}";
+			DumpString (postData);
+			LogData (postData);
+		}
+		else if( Input.GetKeyUp (KeyCode.M)) {
+			mode = "MESSAGE";
+			Debug.LogError("mode: " + mode);
+			string postData = "{" + 
+				"\"content\": [" + 
+					"{  \"UserId\" : \"sthakur\", \"AppName\" : \"unity3D\", \"SysId\" : \"WIN64\", " + "\"ProjId\" : \"LAS/Instrumentation\", " + " \"EvtTime\" : " + datetime + " , \"NetAddr\" : \"152.14.3.32\" , \"GeoLoc\" : \"RALEIGH NC\" , " + " \"EvtType\" : \"key_press\" , \"EvtDesc\" : \"" + KeyCode.M  + "\" , \"EvtCoords\" : " + "{ \"x\" : " + Input.mousePosition.x + " , \"y\" : " + Input.mousePosition.y + " , \"z\" : " + Input.mousePosition.z + " } "  + " }" + 
+					"]}";
+			DumpString (postData);
+			LogData (postData);
+		}
+
+	}
+
+	void LogData (string postData) {
+
+		if(mode == "DOCUMENT" ) {
+
+			DumpString (postData);
+
+			Debug.LogError("mode: " + mode);
+			Debug.LogError("Sending data: " + postData);
+
+			// Write out string to local file
+
+			LasIL logger = new LasIL ();
+
+			uri = "http://skylr.renci.org/api/data/document/add";
+			logger.SetResponseDensity(LoggingDensity);
+
+			ResponseObject R = logger.LogData (uri, postData);
+			Debug.LogError (R.Response);
+			
+		}
+		else if(mode == "FILE" ) {
+
+			Debug.LogError("mode: " + mode);
+			Debug.LogError("Sending data: " + postData);
+			
+			LasIL logger = new LasIL ();
+			
+			uri = "http://skylr.renci.org/api/data/file/add";
+			logger.SetResponseDensity(LoggingDensity);
+			
+			ResponseObject R = logger.LogFile (uri, postData, "C:\\file.txt");
+			Debug.LogError (R.Response);
+			
+		}
+		else if( mode == "BINARY" ) {
+			byte[] byteArray = StrToBytes("Hello World");
+			LasIL logger = new LasIL();
+
+			Debug.LogError("mode: " + mode);
+
+			uri = "http://skylr.renci.org/api/data/file/addBinary";
+			logger.SetResponseDensity(LoggingDensity);
+
+			ResponseObject R = logger.LogBinaryFile( uri, byteArray );
+
+			Debug.LogError( R.Response);
+		}
+		else if( mode == "MESSAGE" ) {
+			string message = ("Hello World");
+			LasIL logger = new LasIL();
+
+			Debug.LogError("mode: " + mode);
+			Debug.LogError("Sending message: " + message);
+
+			uri = "http://skylr.renci.org/api/data/messageQ/add";
+			logger.SetResponseDensity(LoggingDensity);
+			
+			ResponseObject R = logger.LogData( uri, message, true );
+			
+			Debug.LogError( R.Response);
+		}
+	}
+
+	/// <summary>
+	/// Strings to bytes.
+	/// </summary>
+	/// <returns>The to bytes.</returns>
+	/// <param name="str">String.</param>
+	/// <value>Obtained from http://stackoverflow.com/questions/5173033/string-serialization-and-deserialization-problem</value>
+	private byte[] StrToBytes(string str)
+	{
+		BinaryFormatter bf = new BinaryFormatter();
+		
+		MemoryStream ms = new MemoryStream();
+		bf.Serialize(ms, str);
+		ms.Seek(0, 0);
+		return ms.ToArray();
+	}
+
+	/// <summary>
+	/// Write string to file
+	/// </summary>
+	private void DumpString(string str)
+	{
+		/*
+		StringBuilder sb = new StringBuilder ();
+
+		sb.AppendLine (str);
+
+		using (StreamWriter outfile = new StreamWriter (myDocPath + @"\data.txt")) 
+		{
+			outfile.WriteLine(sb.ToString());		
+			outfile.Flush();
+			outfile.Close();
+		}
+		*/
+		string path = myDocPath + @"\data.txt";
+
+		File.AppendAllText (path, (str + System.Environment.NewLine));
+	}
+
+}

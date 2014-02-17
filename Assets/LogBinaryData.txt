@@ -1,0 +1,102 @@
+		/// <summary>
+		/// Logs the input binary data.
+		/// </summary>
+		/// <param name="uri">URI.</param>
+		/// <param name="data">Data.</param>
+		/// <returns>Returns a response object that contains response string and response type that are set by server.</returns>
+		protected ResponseObject LogBinaryData( string uri, byte[] data ) {
+
+			// Set up an instance of Http Web Request 
+			HttpWebRequest request = (HttpWebRequest)WebRequest.Create (uri);
+			
+			// Set up array to hold data
+			byte[] byteArray = data;
+			
+			//-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=//
+			// Set attributes of the HTTP web request object
+			
+			// Request Method
+			request.Method = WebRequestMethods.Http.Post;
+			
+			// Content Type
+			request.ContentType = "application/octet-stream"; // binary data
+			
+			// Content length proprty
+			request.ContentLength = data.Length;
+			
+			//-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=//
+			
+			
+			
+			//-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=//
+			// Declare request stream and write to it
+			
+			Stream dataStream = request.GetRequestStream ();
+			
+			// Check if data stream is null
+			if (dataStream == null) {
+				ResponseObject RFail = new ResponseObject();
+				switch(ResponseDensity) {
+				case 0: RFail.Response = ""; break;
+				case 1: case 2: case 3: case 4: RFail.Response = "[DataLogger] Error (stream could not be initialized).\n"; break;
+				}
+				RFail.Type = (int)ResponseObject.ResponseType.ERROR;
+				return RFail;
+			}
+			
+			// Write data to the request stream and close it
+			dataStream.Write (byteArray, 0, byteArray.Length);
+			dataStream.Close ();
+			
+			//-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=//
+			
+			
+			
+			//-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=//
+			// Get response from server  
+			
+			ResponseObject R = new ResponseObject();
+			
+			try
+			{
+				using (WebResponse response = request.GetResponse())
+				{
+					HttpWebResponse _resp = (HttpWebResponse)response;
+					
+					if(_resp.StatusCode == HttpStatusCode.OK) {
+						switch(ResponseDensity) {
+						case 0: R.Response = ""; break;
+						case 1: R.Response = "" + _resp.StatusCode + "\n"; break;
+						case 2: case 3: case 4: R.Response = "[DataLogger] Server response: " + byteArray.Length + " bytes received.\n"; break;
+						}
+						R.Type = (int)ResponseObject.ResponseType.NOTICE;
+						_resp.Close();
+					}
+				}
+			}
+			// @ Following exception is raised
+			catch (WebException e)
+			{
+				using (WebResponse response = e.Response)
+				{
+					HttpWebResponse _resp = (HttpWebResponse)response;
+					
+					using (Stream _data = _resp.GetResponseStream())
+					{
+						string _text = new StreamReader(_data).ReadToEnd();
+						_resp.Close();
+						switch(ResponseDensity) {
+						case 0: R.Response = ""; break;
+						case 1: R.Response = "" + _resp.StatusCode + "\n"; break;
+						case 2: case 3: case 4: R.Response = "[DataLogger] Return code: " + _resp.StatusCode + " while sending data. size: " + data.Length + " Server Response: " + _text + "\n"; break;
+						}
+						R.Response = "[DataLogger] Return code: " + _resp.StatusCode + " while sending data. size: " + data.Length + " Server Response: " + _text + "\n";
+						R.Type = (int)ResponseObject.ResponseType.ERROR;
+					}
+				}
+			}
+			
+			//-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=//
+			
+			return R;
+		}
